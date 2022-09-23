@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import type {Node} from 'react';
 import {
   SafeAreaView,
@@ -16,6 +16,8 @@ import {
   Text,
   useColorScheme,
   View,
+  Alert,
+  PermissionsAndroid,
 } from 'react-native';
 
 import {
@@ -26,9 +28,10 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
- * LTI update could not be added via codemod */
-const Section = ({children, title}): Node => {
+// import SmsRetriever from 'react-native-sms-retriever';
+import SmsListener from 'react-native-android-sms-listener';
+
+const Section = ({children, title}) => {
   const isDarkMode = useColorScheme() === 'dark';
   return (
     <View style={styles.sectionContainer}>
@@ -54,19 +57,63 @@ const Section = ({children, title}): Node => {
   );
 };
 
-const App: () => Node = () => {
+const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  async function getPermission() {
+    const readPermission = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.READ_SMS,
+      {
+        title: 'Ola',
+        message: 'Permissão para ver seu sms rss.',
+      },
+    );
+
+    const receivePermission = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
+      {
+        title: 'Receive SMS',
+        message: 'Need access to receive sms, to verify OTP',
+      },
+    );
+
+    return [readPermission, receivePermission];
+  }
+
+  async function listenSms() {
+    try {
+      const resp = await getPermission();
+      console.log('*****************************1', resp);
+      return SmsListener.addListener(message => {
+        console.info(message);
+        Alert.alert(message.originatingAddress, message.body, [
+          {
+            text: 'Cancel',
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+          },
+          {text: 'OK', onPress: () => console.log('OK Pressed')},
+        ]);
+      });
+    } catch (err) {
+      console.log('*****************************2', err);
+    }
+  }
+
+  useEffect(() => {
+    const SmsListenerSub = listenSms();
+    return () => {
+      SmsListenerSub.remove();
+    };
+  }, []);
+
   return (
     <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={backgroundStyle}>
