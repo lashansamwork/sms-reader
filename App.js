@@ -8,6 +8,7 @@
 
 import React, { useEffect } from 'react';
 import type { Node } from 'react';
+import { Provider as PaperProvider } from 'react-native-paper';
 import {
   SafeAreaView,
   ScrollView,
@@ -19,7 +20,7 @@ import {
   Alert,
   PermissionsAndroid,
 } from 'react-native';
-
+import theme from './theme/theme';
 import {
   Colors,
 } from 'react-native/Libraries/NewAppScreen';
@@ -31,6 +32,7 @@ import FormScreen from './screens/FormScreen';
 const Section = ({ children, title }) => {
   const isDarkMode = useColorScheme() === 'dark';
   return (
+
     <View style={styles.sectionContainer}>
       <Text
         style={[
@@ -52,6 +54,7 @@ const Section = ({ children, title }) => {
       </Text>
 
     </View>
+
   );
 };
 
@@ -110,22 +113,24 @@ const App = () => {
   }, []);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
+    <PaperProvider theme={theme}>
+      <SafeAreaView style={backgroundStyle}>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          style={backgroundStyle}>
+          {/* <Header /> */}
 
-        <FormScreen />
+          <FormScreen />
 
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          <View
+            style={{
+              backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            }}>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </PaperProvider>
   );
 };
 
